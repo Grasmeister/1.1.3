@@ -1,10 +1,10 @@
 package jm.task.core.jdbc;
 
+import jm.task.core.jdbc.dao.UserDaoHibernateImpl;
 import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
 import jm.task.core.jdbc.model.User;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -14,9 +14,10 @@ public class Main {
 
     public static void main(String[] args) throws SQLException {
         UserDaoJDBCImpl udi = new UserDaoJDBCImpl();
+//        UserDaoHibernateImpl udhi = new UserDaoHibernateImpl();
 
-             udi.dropUsersTable();
-            udi.createUsersTable();
+        udi.dropUsersTable();
+        udi.createUsersTable();
 
 
         User user = new User("Ivan", "Taranenko", (byte) 2);
@@ -40,6 +41,30 @@ public class Main {
         udi.cleanUsersTable();
 
         udi.dropUsersTable();
-        // реализуйте алгоритм здесь
+
+        System.out.println("UserDaoJDBCImpl закончил!");
+        // Проверка хибернейт
+//
+//        udhi.dropUsersTable();
+//        udhi.createUsersTable();
+//
+//        udhi.createUsersTable();
+//        udhi.saveUser(user.getName(), user.getLastName(), user.getAge());
+//        udhi.saveUser(user2.getName(), user2.getLastName(), user2.getAge());
+//        udhi.saveUser(user3.getName(), user3.getLastName(), user4.getAge());
+//        udhi.saveUser(user4.getName(), user4.getLastName(), user4.getAge());
+//
+//        udhi.removeUserById(2);
+//        List<User> userList1 = udhi.getAllUsers();
+//
+//        for (User u :
+//                userList1) {
+//            System.out.println(u.toString());
+//        }
+//
+//        udhi.cleanUsersTable();
+//
+//        udhi.dropUsersTable();
+//        // реализуйте алгоритм здесь
     }
 }

@@ -1,16 +1,14 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
-import jm.task.core.jdbc.util.Util;
+import static jm.task.core.jdbc.util.Util.getConnect;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
+    private Connection connection = getConnect();
     /**
      * Получение соединения с БД.
      */
@@ -20,8 +18,8 @@ public class UserDaoJDBCImpl implements UserDao {
      */
     private static final String QUERY_CREAT_TABLE = "CREATE TABLE if not exists users_db("
             + " id int NOT NULL AUTO_INCREMENT,"
-            + "name VARCHAR(45) NOT NULL,"
-            + "last_name VARCHAR(45) NOT NULL,"
+            + "name VARCHAR(32) NOT NULL,"
+            + "last_name VARCHAR(32) NOT NULL,"
             + "age INT NOT NULL,"
             + "PRIMARY KEY (id));";
     /**
@@ -35,7 +33,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void createUsersTable() {
         System.out.println("Создание таблицы");
-        try (PreparedStatement statement = new Util().getConnect().prepareStatement(QUERY_CREAT_TABLE)) {
+        try (PreparedStatement statement = connection.prepareStatement(QUERY_CREAT_TABLE)) {
             statement.executeUpdate();
             System.out.println("Таблица  users_db создана.");
         } catch (SQLException ex) {
@@ -46,7 +44,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void dropUsersTable() {
         System.out.println("Удаление таблицы");
-        try (PreparedStatement statement = new Util().getConnect().prepareStatement("drop table IF EXISTS users_db")) {
+        try (PreparedStatement statement = connection.prepareStatement(QUERY_DROP_TABLE)) {
             statement.executeUpdate();
             System.out.println("Таблица  users_db удалена.");
         } catch (SQLException ignore) {
@@ -54,10 +52,11 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        String queryForLink = String.format("INSERT INTO users_db (name, last_name, age)  "
-                + "VALUES('%s', '%s', '%s')", name, lastName, age);
-        try (PreparedStatement statement = new Util().getConnect().prepareStatement(queryForLink)) {
-
+        String queryForLink = String.format("insert  into users_db (name, last_name, age) values (?, ?, ?)");
+        try (PreparedStatement statement = connection.prepareStatement(queryForLink)) {
+            statement.setString(1, name);
+            statement.setString(2, lastName);
+            statement.setByte(3, age);
             statement.executeUpdate();
             System.out.println("User с именем – " + name + " добавлен в базу данных");
         } catch (SQLException ignore) {
@@ -66,8 +65,9 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void removeUserById(long id) {
 
-        try (PreparedStatement statement = new Util().getConnect()
-                .prepareStatement("delete from users_db where id = '" + id + "'")) {
+        try (PreparedStatement statement = connection
+                .prepareStatement("delete from users_db where id = ?")) {
+            statement.setString(1, String.valueOf(id));
             statement.executeUpdate();
         } catch (SQLException ignore) {
         }
@@ -78,7 +78,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public List<User> getAllUsers() {
         List<User> userList = new ArrayList<>();
         String sql = "select * from users_db";
-        try (PreparedStatement statement = new Util().getConnect().prepareStatement(sql);
+        try (PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
@@ -99,7 +99,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public void cleanUsersTable() {
         System.out.println("Удаление данных из базы данных: ");
         String queryClearDB = "delete from users_db";
-        try (PreparedStatement statement = new Util().getConnect().prepareStatement(queryClearDB)) {
+        try (PreparedStatement statement = connection.prepareStatement(queryClearDB)) {
             statement.executeUpdate();
         } catch (SQLException ignore) {
         }
