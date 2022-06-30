@@ -4,20 +4,19 @@ import jm.task.core.jdbc.model.User;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import static jm.task.core.jdbc.util.Util.getSession;
-
 import java.util.List;
+
+import static jm.task.core.jdbc.util.Util.getSession;
 
 public class UserDaoHibernateImpl implements UserDao {
     /**
      * SQL-запрос для создания таблицы.
      */
-    private static final String QUERY_CREAT_TABLE = "CREATE TABLE IF NOT EXISTS users_db("
-            + " id int NOT NULL AUTO_INCREMENT,"
-            + "name VARCHAR(32) NOT NULL,"
-            + "last_name VARCHAR(32) NOT NULL,"
-            + "age INT NOT NULL,"
-            + "PRIMARY KEY (id));";
+    private static final String QUERY_CREAT_TABLE = "CREATE TABLE `schema_user`.`users_db` ("
+            + "`id` BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL,"
+            + "`name` VARCHAR(45) NOT NULL,"
+            + "`last_name` VARCHAR(45) NOT NULL,"
+            + "`age` TINYINT NOT NULL);";
     /**
      * SQL-запрос для удаления таблицы.
      */
@@ -30,9 +29,9 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        try (Session session = getSession().getCurrentSession()) {
+        try (Session session = getSession().openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.createSQLQuery(QUERY_CREAT_TABLE);
+            session.createSQLQuery(QUERY_CREAT_TABLE).executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -41,7 +40,7 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void dropUsersTable() {
-        try (Session session = getSession().getCurrentSession()) {
+        try (Session session = getSession().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.createSQLQuery(QUERY_DROP_TABLE).executeUpdate();
             transaction.commit();
@@ -55,7 +54,7 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void saveUser(String name, String lastName, byte age) {
 
-        try (Session session = getSession().getCurrentSession()) {
+        try (Session session = getSession().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.save(new User(name, lastName, age));
             transaction.commit();
@@ -66,7 +65,7 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
-        try (Session session = getSession().getCurrentSession()) {
+        try (Session session = getSession().openSession()) {
             Transaction transaction = session.beginTransaction();
             User user = session.get(User.class, id);
             session.delete(user);
@@ -79,10 +78,8 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public List<User> getAllUsers() {
         List<User> users = null;
-        try (Session session = getSession().getCurrentSession()) {
-            Transaction transaction = session.beginTransaction();
-            users = (List<User>) session.createQuery("from users_db").list();
-            transaction.commit();
+        try (Session session = getSession().openSession()) {
+            users = session.createQuery("From " + User.class.getSimpleName()).list();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -91,6 +88,12 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void cleanUsersTable() {
-
+        try (Session session = getSession().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.createSQLQuery("delete from users_db").executeUpdate();
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
