@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
      * Удаление таблицы из базы.
      */
     public void dropUsersTable() {
-        ud.createUsersTable();
+        ud.dropUsersTable();
 
     }
 

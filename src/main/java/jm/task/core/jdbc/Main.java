@@ -31,6 +31,7 @@ public class Main {
 
         udi.removeUserById(2);
         List<User> userList = udi.getAllUsers();
+
         for (User u :
                 userList) {
             System.out.println(u.toString());
